@@ -1,0 +1,16 @@
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point
+
+# Load population CSV
+pop = pd.read_csv("C:/Users/Niranjan S/NASA Space Apps/population index/ind_pd_2020_1km_ASCII_XYZ.csv")
+
+# Convert to GeoDataFrame
+geometry = [Point(xy) for xy in zip(pop['X'], pop['Y'])]
+pop_gdf = gpd.GeoDataFrame(pop, geometry=geometry, crs='EPSG:4326')
+
+# Example: Aggregate to wards
+wards = gpd.read_file('Data/vectors/wards.shp')
+pop_ward = gpd.sjoin(pop_gdf, wards, how='inner', op='within')
+ward_population = pop_ward.groupby('ward_id')['population'].sum().reset_index()
+wards = wards.merge(ward_population, on='ward_id', how='left')

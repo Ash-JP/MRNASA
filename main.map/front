@@ -1,0 +1,34 @@
+import folium
+
+# 1️⃣ Create a map centered at a location (latitude, longitude)
+m = folium.Map(location=[28.6139, 77.2090],  # Delhi coordinates
+               zoom_start=12,               # Zoom level
+               tiles='OpenStreetMap')       # Map style
+
+# 2️⃣ Add a marker
+folium.Marker(
+    location=[28.6139, 77.2090],
+    popup='Delhi',
+    tooltip='Click for info'
+).add_to(m)
+
+# 3️⃣ Add a circle
+folium.Circle(
+    location=[28.6139, 77.2090],
+    radius=1000,  # in meters
+    color='blue',
+    fill=True,
+    fill_color='cyan'
+).add_to(m)
+
+# 4️⃣ Add a polygon
+folium.Polygon(
+    locations=[[28.62, 77.20], [28.61, 77.22], [28.60, 77.21]],
+    color='green',
+    fill=True,
+    fill_color='green'
+).add_to(m)
+
+# 5️⃣ Display the map
+m.save("delhi_map.html")
+print("Map saved as delhi_map.html")
