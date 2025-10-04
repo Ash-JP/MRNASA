@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>{{ title or "Urban Climate Planner" }}</title>
+        
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+        
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    </head>
+    
+    <body>
+        <header class="topbar">
+            <div class="brand"><img src="{{ url_for('static_img', filename='logo.png') }}" alt="logo" height="32"> Urban Climate Planner</div>
+            <div class="nav">
+                {% if session.user %}
+                    <span>Signed in as {{ session.user }} ({{ session.role }})</span>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        
+        <footer>
+            <small>Designed for the Urban Climate Planning Challenge • Uses NASA POWER, GIBS, CMR & SEDAC</small>
+        </footer>
+    </body>
+</html>
