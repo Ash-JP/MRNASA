@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR NASA - Smart City Planning Platform</title>
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="window.location.href='index.html'">
+            <img src="./images/homeimg.jpg" alt="MR NASA Logo">
+        </div>
+        <button class="login-btn" onclick="openModal()">Login</button>
+    </header>
+    <div class="container">
+        <div class="hero-section">
+            <h1>Welcome to MR NASA</h1>
+            <p class="subtitle">Smart City Planning Made Simple</p>
+            <p class="description">
+                MR NASA is a professional urban planning platform designed for city planners, developers, and municipalities. Our solution leverages advanced analytics to evaluate geographical, environmental, and infrastructural data, enabling informed decisions for construction and development projects.
+            </p>
+            <p class="description">
+                From residential neighborho ods to healthcare facilities, utilities, and commercial spaces, MR NASA delivers comprehensive suitability assessments. Criteria include terrain analysis, accessibility, environmental impact, proximity to essential services, and regulatory compliance—empowering sustainable and efficient city growth.
+            </p>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <div class="feature-title">Residential Planning</div>
+                    <p class="feature-text">Pinpoint optimal locations for housing developments, factoring in accessibility, infrastructure, and quality of life.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏥</div>
+                    <div class="feature-title">Hospital Suitability</div>
+                    <p class="feature-text">Assess sites for healthcare facilities based on population needs, emergency access, and supporting infrastructure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Utility Assessment</div>
+                    <p class="feature-text">Identify strategic locations for utilities such as power plants and water treatment, ensuring reliability and efficiency.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <div class="feature-title">Commercial Zones</div>
+                    <p class="feature-text">Analyze commercial districts for optimal business placement and economic impact.</p>
+                </div>
+            </div>
+            <div class="cta-section">
+                <button class="cta-btn" onclick="openModal()">Get Started</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>Login to MR NASA</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="modal-btn btn-submit">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+ <script src="./scripts/scripts.js"></script>
+</body>
+</html>
