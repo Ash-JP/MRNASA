@@ -43,6 +43,18 @@ function createGIBSTileUrl(layerConfig, date) {
     return `${GIBS_CONFIG.baseUrl}${name}/default/${date}/${tileMatrixSet}/{z}/{y}/{x}.png`;
 }
 
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        setTimeout(() => {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 600);
+        }, 1500);
+    }
+}
+
 function initMap() {
     try {
         map = L.map('map', {
@@ -84,8 +96,11 @@ function initMap() {
         setDefaultDates();
 
         console.log('Map initialized with date:', currentDate);
+        
+        hideLoadingScreen();
     } catch (error) {
         console.error('Error initializing map:', error);
+        hideLoadingScreen();
         alert('Failed to initialize map. Please refresh the page.');
     }
 }
@@ -184,6 +199,48 @@ function setupEventListeners() {
     setupLayerToggle('layer-ndvi', 'vegetation');
     setupLayerToggle('layer-heatmap', 'analysisHeat');
 
+    // Search functionality
+    const searchBtn = document.getElementById('search-location-btn');
+    const searchInput = document.getElementById('location-search');
+    
+    if (searchBtn && searchInput) {
+        const performSearch = () => {
+            const query = searchInput.value.trim();
+            if (!query) {
+                alert('Please enter a location to search');
+                return;
+            }
+            
+            if (typeof L.Control !== 'undefined' && L.Control.Geocoder) {
+                const geocoder = L.Control.Geocoder.nominatim();
+                geocoder.geocode(query, (results) => {
+                    if (results && results.length > 0) {
+                        const result = results[0];
+                        const latlng = result.center;
+                        map.setView(latlng, 12);
+                        
+                        L.popup()
+                            .setLatLng(latlng)
+                            .setContent(`<b>${result.name}</b>`)
+                            .openOn(map);
+                    } else {
+                        alert('Location not found. Please try a different search term.');
+                    }
+                });
+            } else {
+                alert('Search functionality is not available. Please check if Leaflet Geocoder is loaded.');
+            }
+        };
+        
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
+
+    // Place structure functionality
     const placeBtn = document.getElementById('place-structure');
     const structureSelect = document.getElementById('structure-type');
     
@@ -219,11 +276,23 @@ function setupEventListeners() {
         });
     }
 
+    // Analysis button
     const scoreBtn = document.getElementById('score-selected');
     if (scoreBtn) {
         scoreBtn.addEventListener('click', analyzePoints);
     }
 
+    // Clear markers button
+    const clearBtn = document.getElementById('clear-markers-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all placed structures?')) {
+                clearAllMarkers();
+            }
+        });
+    }
+
+    // Date change listeners
     const endDateInput = document.getElementById('end-date');
     if (endDateInput) {
         endDateInput.addEventListener('change', (e) => {
@@ -237,11 +306,15 @@ function setupEventListeners() {
     if (startDateInput) {
         startDateInput.addEventListener('change', (e) => {
             if (e.target.value) {
-                updateGIBSLayersWithDate(e.target.value);
+                const endInput = document.getElementById('end-date');
+                if (!endInput.value || new Date(e.target.value) > new Date(endInput.value)) {
+                    updateGIBSLayersWithDate(e.target.value);
+                }
             }
         });
     }
 
+    // Modal close functionality
     const modalClose = document.getElementById('rec-close');
     if (modalClose) {
         modalClose.addEventListener('click', () => {
@@ -642,7 +715,7 @@ function setDefaultDates() {
     }
 }
 
-window.clearAllMarkers = function() {
+function clearAllMarkers() {
     drawnLayers.clearLayers();
     selectedPoints = [];
     
@@ -656,8 +729,9 @@ window.clearAllMarkers = function() {
     }
     
     console.log('All markers cleared');
-};
+}
 
+// Initialize map when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMap);
 } else {

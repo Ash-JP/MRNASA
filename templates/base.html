@@ -1,35 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>{{ title or "Urban Climate Planner" }}</title>
-        
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-        
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "Urban Climate Planner" }}</title>
     
-    <body>
-        <header class="topbar">
-            <div class="brand"><img src="{{ url_for('static_img', filename='logo.png') }}" alt="logo" height="32"> Urban Climate Planner</div>
-            <div class="nav">
-                {% if session.user %}
-                    <span>Signed in as {{ session.user }} ({{ session.role }})</span>
-                    <a href="{{ url_for('logout') }}">Logout</a>
-                {% endif %}
-            </div>
-        </header>
-
-        <main>
-            {% block content %}{% endblock %}
-        </main>
-
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    
+    <style>
+        /* Additional styles for base template */
+        .topbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
         
-        <footer>
-            <small>Designed for the Urban Climate Planning Challenge • Uses NASA POWER, GIBS, CMR & SEDAC</small>
-        </footer>
-    </body>
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .brand img {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav span {
+            font-size: 0.95rem;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .nav a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        main {
+            min-height: calc(100vh - 120px);
+        }
+        
+        footer {
+            background: #2d3e50;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.85rem;
+        }
+        
+        footer small {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" height="32" onerror="this.style.display='none'">
+            Urban Climate Planner
+        </div>
+        <div class="nav">
+            {% if session.user %}
+                <span>{{ session.user }} ({{ session.role }})</span>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <small>Designed for the Urban Climate Planning Challenge • Uses NASA POWER, GIBS, CMR & SEDAC</small>
+    </footer>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+</body>
 </html>

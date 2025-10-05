@@ -257,15 +257,14 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         if not username or not password:
-            return render_template("login.html", error="Username and password required")
+            return render_template("login_home.html", error="Username and password required")
         user = query_user_by_username(username)
         if user and check_password_hash(user["password"], password):
             session["user"] = username
             session["role"] = user["role"]
             return redirect(url_for("planner"))
-        return render_template("login.html", error="Invalid credentials")
-    return render_template("login.html")
-
+        return render_template("login_home.html", error="Invalid credentials")
+    return render_template("login_home.html")
 
 @app.route("/logout")
 def logout():

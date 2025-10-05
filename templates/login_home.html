@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR NASA - Smart City Planning Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_home.css') }}">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Urban Climate Planner" onerror="this.style.display='none'">
+        </div>
+        <div class="loading-text">MR NASA</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Fixed World Background -->
+    <div class="world-background">
+        <img id="worldImage" src="{{ url_for('static', filename='img/world.png') }}" alt="World Map">
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="logo" onclick="window.location.href='{{ url_for('home') }}'">
+            <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="header-buttons">
+            <button class="header-btn about-btn" onclick="scrollToAbout()">About</button>
+            <button class="header-btn help-btn" onclick="scrollToHelp()">Help</button>
+            <button class="header-btn login-btn" onclick="openModal()">Login</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container" id="container">
+        <div class="hero-section">
+            <div class="banner"></div>
+            <h1>Welcome to MR NASA</h1>
+            <p class="subtitle">Smart City Planning Made Simple</p>
+            <p class="description">
+                MR NASA is a professional urban planning platform designed for city planners, developers, and municipalities. Our solution leverages advanced analytics to evaluate geographical, environmental, and infrastructural data, enabling informed decisions for construction and development projects.
+            </p>
+            <p class="description">
+                From residential neighborhoods to healthcare facilities, utilities, and commercial spaces, Urban Climate Planner delivers comprehensive suitability assessments. Criteria include terrain analysis, accessibility, environmental impact, proximity to essential services, and regulatory compliance—empowering sustainable and efficient city growth.
+            </p>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <div class="feature-title">Residential Planning</div>
+                    <p class="feature-text">Pinpoint optimal locations for housing developments, factoring in accessibility, infrastructure, and quality of life.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏥</div>
+                    <div class="feature-title">Hospital Suitability</div>
+                    <p class="feature-text">Assess sites for healthcare facilities based on population needs, emergency access, and supporting infrastructure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Utility Assessment</div>
+                    <p class="feature-text">Identify strategic locations for utilities such as power plants and water treatment, ensuring reliability and efficiency.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <div class="feature-title">Commercial Zones</div>
+                    <p class="feature-text">Analyze commercial districts for optimal business placement and economic impact.</p>
+                </div>
+            </div>
+            <div class="cta-section">
+                <button class="cta-btn" onclick="openModal()">Get Started</button>
+            </div>
+        </div>
+
+        <div class="about-section" id="about">
+            <h2>About MR NASA</h2>
+            <p class="description">
+                MR NASA stands at the forefront of intelligent urban development, combining cutting-edge technology with sustainable planning principles to shape the cities of tomorrow.
+            </p>
+            <div class="about-content">
+                <div class="about-card">
+                    <h3>Our Mission</h3>
+                    <p>To empower city planners and developers with data-driven insights that promote sustainable, efficient, and livable urban environments for future generations.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Vision</h3>
+                    <p>Creating smarter cities through intelligent planning, where technology and sustainability converge to improve quality of life for all residents.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Technology</h3>
+                    <p>Advanced geospatial analysis, AI-powered predictions, and comprehensive data integration to provide accurate suitability assessments for urban development projects.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="help">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Help & Support</h3>
+                <p>Need assistance? We're here to help you navigate Urban Climate Planner's platform and maximize your urban planning potential.</p>
+                <ul>
+                    <li>📧 Email: support@urbanplanner.com</li>
+                    <li>📞 Phone: +1 (555) 123-4567</li>
+                    <li>⏰ Hours: Mon-Fri, 9AM-6PM EST</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#" onclick="openModal(); return false;">Login</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Tutorials</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Getting Started Guide</a></li>
+                    <li><a href="#">Video Tutorials</a></li>
+                    <li><a href="#">Case Studies</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Community Forum</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Have questions about our platform? Reach out to our team for personalized assistance with your urban planning projects.</p>
+                <p style="margin-top: 1rem;"><a href="#">Contact Form →</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Urban Climate Planner - Smart City Planning Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>Login to Urban Climate Planner</h2>
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('login') }}" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="modal-btn btn-submit">
+                        <span class="btn-text">Login</span>
+                        <span class="btn-spinner" style="display: none;">
+                            <span class="spinner-icon"></span>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Loading screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.classList.add('fade-out');
+                
+                setTimeout(function() {
+                    const worldImage = document.getElementById('worldImage');
+                    worldImage.style.opacity = '0.15';
+                    
+                    const header = document.getElementById('header');
+                    const container = document.getElementById('container');
+                    const footer = document.getElementById('help');
+                    
+                    header.classList.add('visible');
+                    container.classList.add('visible');
+                    footer.classList.add('visible');
+                }, 600);
+            }, 1500);
+        });
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        // Smooth scroll functions
+        function scrollToAbout() {
+            document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollToHelp() {
+            document.getElementById('help').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle login with animation
+        function handleLogin(event) {
+            const submitBtn = event.target.querySelector('.btn-submit');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnSpinner = submitBtn.querySelector('.btn-spinner');
+            
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            // Let the form submit naturally
+            return true;
+        }
+
+        // Show modal if there's an error
+        {% if error %}
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    openModal();
+                }, 2000);
+            });
+        {% endif %}
+
+        // Close modal on outside click
+        document.getElementById('loginModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
