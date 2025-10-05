@@ -167,8 +167,8 @@ header.visible {
 
 .logo {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
+    top: 0.5rem;
+    left: 3rem;
     width: 4rem;
     height: 4rem;
     border-radius: 50%;
