@@ -7,14 +7,40 @@
     <link rel="stylesheet" href="./styles/styles.css">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <img src="./images/homeimg.jpg" alt="MR NASA" onerror="this.style.display='none'">
+        </div>
+        <div class="loading-text">MR NASA</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Fixed World Background -->
+    <div class="world-background">
+        <img id="worldImage" src="./images/world.png" alt="World Map" id="worldImage">
+    </div>
+
+    <!-- Header -->
     <header>
         <div class="logo" onclick="window.location.href='index.html'">
-            <img src="./images/homeimg.jpg" alt="MR NASA Logo">
+            <img src="./images/homeimg.jpg" alt="MR NASA Logo" onerror="this.style.display='none'">
         </div>
-        <button class="login-btn" onclick="openModal()">Login</button>
+        <div class="header-buttons">
+            <button class="header-btn about-btn" onclick="scrollToAbout()">About</button>
+            <button class="header-btn help-btn" onclick="scrollToHelp()">Help</button>
+            <button class="header-btn login-btn" onclick="openModal()">Login</button>
+        </div>
     </header>
+    
+
+    <!-- Main Content -->
     <div class="container">
         <div class="hero-section">
+            <div class="banner"></div>
             <h1>Welcome to MR NASA</h1>
             <p class="subtitle">Smart City Planning Made Simple</p>
             <p class="description">
@@ -49,7 +75,72 @@
                 <button class="cta-btn" onclick="openModal()">Get Started</button>
             </div>
         </div>
+
+        <div class="about-section" id="about">
+            <h2>About MR NASA</h2>
+            <p class="description">
+                MR NASA stands at the forefront of intelligent urban development, combining cutting-edge technology with sustainable planning principles to shape the cities of tomorrow.
+            </p>
+            <div class="about-content">
+                <div class="about-card">
+                    <h3>Our Mission</h3>
+                    <p>To empower city planners and developers with data-driven insights that promote sustainable, efficient, and livable urban environments for future generations.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Vision</h3>
+                    <p>Creating smarter cities through intelligent planning, where technology and sustainability converge to improve quality of life for all residents.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Technology</h3>
+                    <p>Advanced geospatial analysis, AI-powered predictions, and comprehensive data integration to provide accurate suitability assessments for urban development projects.</p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <footer id="help">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Help & Support</h3>
+                <p>Need assistance? We're here to help you navigate MR NASA's platform and maximize your urban planning potential.</p>
+                <ul>
+                    <li>📧 Email: support@mrnasa.com</li>
+                    <li>📞 Phone: +1 (555) 123-4567</li>
+                    <li>⏰ Hours: Mon-Fri, 9AM-6PM EST</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#" onclick="openModal(); return false;">Login</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Tutorials</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Getting Started Guide</a></li>
+                    <li><a href="#">Video Tutorials</a></li>
+                    <li><a href="#">Case Studies</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Community Forum</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Have questions about our platform? Reach out to our team for personalized assistance with your urban planning projects.</p>
+                <p style="margin-top: 1rem;"><a href="#">Contact Form →</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 MR NASA - Smart City Planning Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2>Login to MR NASA</h2>
@@ -69,6 +160,7 @@
             </form>
         </div>
     </div>
- <script src="./scripts/scripts.js"></script>
+
+    <script src="./scripts/scripts.js"></script>
 </body>
 </html>
