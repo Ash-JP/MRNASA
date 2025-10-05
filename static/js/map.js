@@ -61,12 +61,7 @@ function initMap() {
 
         initializeGIBSLayers();
 
-        if (typeof L.heatLayer === 'function') {
-            heatLayer = L.layerGroup();
-        } else {
-            console.warn('Leaflet.heat plugin not loaded');
-            heatLayer = L.layerGroup();
-        }
+        heatLayer = L.layerGroup();
 
         if (typeof L.Control !== 'undefined' && L.Control.geocoder) {
             L.Control.geocoder({
@@ -238,6 +233,15 @@ function setupEventListeners() {
         });
     }
 
+    const startDateInput = document.getElementById('start-date');
+    if (startDateInput) {
+        startDateInput.addEventListener('change', (e) => {
+            if (e.target.value) {
+                updateGIBSLayersWithDate(e.target.value);
+            }
+        });
+    }
+
     const modalClose = document.getElementById('rec-close');
     if (modalClose) {
         modalClose.addEventListener('click', () => {
@@ -358,22 +362,28 @@ async function analyzePoints() {
 
         const startInput = document.getElementById('start-date');
         const endInput = document.getElementById('end-date');
-        const startDate = startInput && startInput.value ? startInput.value.replace(/-/g, '') : '';
-        const endDate = endInput && endInput.value ? endInput.value.replace(/-/g, '') : '';
+        
+        let startDate = '';
+        let endDate = '';
+        
+        if (startInput && startInput.value) {
+            startDate = startInput.value.replace(/-/g, '');
+        }
+        if (endInput && endInput.value) {
+            endDate = endInput.value.replace(/-/g, '');
+        }
 
         const payload = {
             points: selectedPoints.map(p => ({
                 lat: p.lat,
                 lon: p.lon,
-                type: p.type,
-                ndvi: 0.3,
-                population: 2000,
-                road_km: 1.0,
-                water_km: 2.0
+                type: p.type
             })),
             start: startDate,
             end: endDate
         };
+
+        console.log('Sending payload:', payload);
 
         const response = await fetch('/api/hotspot_score', {
             method: 'POST',
@@ -382,7 +392,8 @@ async function analyzePoints() {
         });
 
         if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Server returned ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
@@ -395,7 +406,7 @@ async function analyzePoints() {
             displayResults(data.results);
             updateAnalysisHeatmap(data.results);
         } else {
-            alert('No results returned from analysis.');
+            alert('No results returned from analysis. Please check the console for details.');
         }
 
     } catch (error) {
@@ -416,6 +427,18 @@ function displayResults(results) {
     window.__analysisResults = results;
 
     results.forEach((result, idx) => {
+        if (result.error) {
+            const div = document.createElement('div');
+            div.className = 'rec';
+            div.style.borderLeftColor = '#ef4444';
+            div.innerHTML = `
+                <b>Point #${idx + 1} - Error</b><br>
+                <small style="color: #ef4444;">${result.error}</small>
+            `;
+            container.appendChild(div);
+            return;
+        }
+
         const point = selectedPoints[idx];
         const structureType = point ? point.type : 'Unknown';
         
@@ -454,28 +477,24 @@ function displayResults(results) {
 function updateAnalysisHeatmap(results) {
     heatLayer.clearLayers();
 
-    if (results.length === 0) return;
+    const validResults = results.filter(r => !r.error && r.power_summary?.mean_temp != null);
 
-    let minTemp = Infinity;
-    let maxTemp = -Infinity;
-    
-    results.forEach(r => {
-        const temp = r.power_summary?.mean_temp;
-        if (temp != null) {
-            minTemp = Math.min(minTemp, temp);
-            maxTemp = Math.max(maxTemp, temp);
-        }
-    });
-
-    if (!isFinite(minTemp) || !isFinite(maxTemp)) {
+    if (validResults.length === 0) {
         console.warn('No valid temperature data for heatmap');
         return;
     }
 
-    results.forEach(r => {
-        const temp = r.power_summary?.mean_temp;
-        if (temp == null) return;
+    let minTemp = Infinity;
+    let maxTemp = -Infinity;
+    
+    validResults.forEach(r => {
+        const temp = r.power_summary.mean_temp;
+        minTemp = Math.min(minTemp, temp);
+        maxTemp = Math.max(maxTemp, temp);
+    });
 
+    validResults.forEach(r => {
+        const temp = r.power_summary.mean_temp;
         const normalized = maxTemp > minTemp ? (temp - minTemp) / (maxTemp - minTemp) : 0.5;
         
         let color;
@@ -515,7 +534,7 @@ function updateAnalysisHeatmap(results) {
         heatLayer.addTo(map);
     }
 
-    console.log(`Heatmap updated with ${results.length} points (${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C)`);
+    console.log(`Heatmap updated with ${validResults.length} points (${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C)`);
 }
 
 window.showDetailedAnalysis = function(index) {
@@ -523,6 +542,12 @@ window.showDetailedAnalysis = function(index) {
     if (!results || !results[index]) return;
 
     const result = results[index];
+
+    if (result.error) {
+        alert(`Error analyzing this point: ${result.error}`);
+        return;
+    }
+
     const point = selectedPoints[index];
     const structureType = point ? point.type : 'Unknown';
     
@@ -532,6 +557,9 @@ window.showDetailedAnalysis = function(index) {
 
     const meanTemp = result.power_summary?.mean_temp;
     const meanPrecip = result.power_summary?.mean_precip;
+    const meanHumidity = result.power_summary?.mean_humidity;
+    const meanSolar = result.power_summary?.mean_solar;
+    const meanWind = result.power_summary?.mean_wind;
     const nDays = result.power_summary?.n_days;
     
     const scoreColor = result.score >= 70 ? '#10b981' : result.score >= 50 ? '#f59e0b' : '#ef4444';
@@ -564,13 +592,18 @@ window.showDetailedAnalysis = function(index) {
         <h4 style="color: #2c3e50; margin: 1rem 0 0.5rem 0;">Climate Data (NASA POWER)</h4>
         <p><b>Mean Temperature:</b> ${meanTemp !== undefined && meanTemp !== null ? meanTemp.toFixed(2) + '°C' : 'N/A'}</p>
         <p><b>Mean Precipitation:</b> ${meanPrecip !== undefined && meanPrecip !== null ? meanPrecip.toFixed(2) + 'mm/day' : 'N/A'}</p>
+        <p><b>Mean Humidity:</b> ${meanHumidity !== undefined && meanHumidity !== null ? meanHumidity.toFixed(1) + '%' : 'N/A'}</p>
+        <p><b>Mean Solar Radiation:</b> ${meanSolar !== undefined && meanSolar !== null ? meanSolar.toFixed(1) + ' W/m²' : 'N/A'}</p>
+        <p><b>Mean Wind Speed:</b> ${meanWind !== undefined && meanWind !== null ? meanWind.toFixed(1) + ' m/s' : 'N/A'}</p>
         <p><b>Data Points:</b> ${nDays || 'N/A'} days</p>
         
         <hr>
         
         <h4 style="color: #2c3e50; margin: 1rem 0 0.5rem 0;">Environmental Factors</h4>
-        <p><b>NDVI (Vegetation):</b> ${result.ndvi.toFixed(2)}</p>
-        <p><b>Population Density:</b> ~${result.population} people/km²</p>
+        <p><b>NDVI (Vegetation):</b> ${result.ndvi?.toFixed(2) || 'N/A'}</p>
+        <p><b>Population Density:</b> ~${result.population || 'N/A'} people/km²</p>
+        <p><b>Distance to Roads:</b> ${result.road_km?.toFixed(2) || 'N/A'} km</p>
+        <p><b>Distance to Water:</b> ${result.water_km?.toFixed(2) || 'N/A'} km</p>
         <p><b>Structure Type:</b> ${structureType}</p>
         
         <hr>
@@ -592,8 +625,17 @@ function setDefaultDates() {
             const thirtyDaysAgo = new Date(today);
             thirtyDaysAgo.setDate(today.getDate() - 30);
             
-            endInput.valueAsDate = today;
-            startInput.valueAsDate = thirtyDaysAgo;
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            endInput.value = formatDate(today);
+            startInput.value = formatDate(thirtyDaysAgo);
+            
+            updateGIBSLayersWithDate(formatDate(today));
         }
     } catch (error) {
         console.warn('Could not set default dates:', error);
