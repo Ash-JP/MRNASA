@@ -84,7 +84,7 @@ def fetch_power(lat, lon, start, end, parameters="T2M,PRECTOTCORR,RH2M,ALLSKY_SF
 
 
 def fetch_power_data_and_summarize(lat, lon, start, end):
-    """Fetch NASA POWER data, cache, and compute daily means."""
+    """Fetch NASA POWER data, clean invalid values, and compute accurate means."""
     params_str = "T2M,PRECTOTCORR,RH2M,ALLSKY_SFC_SW_DWN,WS2M"
     cache_key = f"power_data_{lat:.4f}_{lon:.4f}_{start}_{end}_{params_str}"
 
@@ -98,21 +98,51 @@ def fetch_power_data_and_summarize(lat, lon, start, end):
             resp.raise_for_status()
             data = resp.json()
 
-            if "properties" not in data or "parameter" not in data.get("properties", {}):
-                logger.error(f"NASA POWER returned unexpected format: {data}")
+            if "properties" not in data or "parameter" not in data["properties"]:
                 raise ValueError("Invalid NASA POWER response format")
 
             cache.set(cache_key, data, timeout=3600)
             logger.info(f"NASA POWER SUCCESS for {lat},{lon} - Data cached")
 
-        except requests.exceptions.Timeout:
-            logger.error(f"NASA POWER TIMEOUT for {lat},{lon}")
-            raise Exception("NASA POWER API timeout - please retry")
         except requests.exceptions.RequestException as e:
             logger.error(f"NASA POWER REQUEST FAILED for {lat},{lon}: {str(e)}")
             raise Exception(f"NASA POWER API error: {str(e)}")
 
-    properties = data.get("properties", {}).get("parameter", {})
+    parameters = data["properties"]["parameter"]
+
+    def clean_values(param_key):
+        raw_values = list(parameters.get(param_key, {}).values())
+        # Remove missing or invalid values (-999, None, "", etc.)
+        valid = [float(v) for v in raw_values if v not in (None, "", -999, -999.0)]
+        return valid
+
+    # Clean data
+    temp_values = clean_values("T2M")
+    precip_values = clean_values("PRECTOTCORR")
+    humidity_values = clean_values("RH2M")
+    solar_values = clean_values("ALLSKY_SFC_SW_DWN")
+    wind_values = clean_values("WS2M")
+
+    # Compute means
+    mean_temp = sum(temp_values) / len(temp_values) if temp_values else None
+    mean_precip = sum(precip_values) if precip_values else None  # total precipitation (mm)
+    mean_humidity = sum(humidity_values) / len(humidity_values) if humidity_values else None
+    mean_solar = sum(solar_values) / len(solar_values) if solar_values else None
+    mean_wind = sum(wind_values) / len(wind_values) if wind_values else None
+
+    n_days = len(temp_values)
+
+    logger.info(f"[NASA SUMMARY] Lat={lat}, Lon={lon} | Temp={mean_temp:.2f}°C | "
+                f"Precip={mean_precip:.2f}mm | Days={n_days}")
+
+    return {
+        "mean_temp": round(mean_temp, 2) if mean_temp else None,
+        "mean_precip": round(mean_precip, 2) if mean_precip else None,
+        "mean_humidity": round(mean_humidity, 2) if mean_humidity else None,
+        "mean_solar": round(mean_solar, 2) if mean_solar else None,
+        "mean_wind": round(mean_wind, 2) if mean_wind else None,
+        "n_days": n_days
+    }
 
     def extract_mean(param_key):
         values = [float(v) for v in properties.get(param_key, {}).values() if v not in (None, "")]
@@ -157,15 +187,25 @@ def compute_score(lat, lon, power_summary=None, ndvi=None, population=None,
 
     # --- Precipitation ---
     if mean_precip is None:
-        mean_precip = 50.0
+        mean_precip = 50.0  # fallback total rainfall in mm
         using_defaults.append("precipitation")
-    if mean_precip < 50:
-        precip_score = (mean_precip / 50.0) * 100.0
-    elif mean_precip <= 150:
+
+    # Convert total precipitation to approximate daily average
+    if ps.get("n_days", 0) > 0:
+        avg_precip = mean_precip / ps["n_days"]
+    else:
+        avg_precip = mean_precip
+
+    # Score based on average daily rainfall
+    if avg_precip < 50:
+        precip_score = (avg_precip / 50.0) * 100.0
+    elif avg_precip <= 150:
         precip_score = 100.0
     else:
-        precip_score = max(0.0, 100.0 - (mean_precip - 150.0) * 0.5)
+        precip_score = max(0.0, 100.0 - (avg_precip - 150.0) * 0.5)
+
     precip_score = min(100.0, max(0.0, precip_score))
+
 
     # --- NDVI ---
     try:
