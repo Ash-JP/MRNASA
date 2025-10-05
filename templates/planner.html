@@ -17,9 +17,9 @@
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" onerror="this.style.display='none'">
+            <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo" onerror="this.style.display='none'">
         </div>
-        <div class="loading-text">Urban Climate Planner</div>
+        <div class="loading-text">MR NASA</div>
         <div class="loading-spinner"></div>
         <div class="loading-progress">
             <div class="loading-progress-bar"></div>
@@ -36,36 +36,18 @@
         <header class="header">
             <div class="logo-section">
                 <div class="logo-circle">
-                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo" onerror="this.style.display='none'">
                 </div>
                 <h1>Urban Climate Planner</h1>
             </div>
             <div class="user-info">
-                {% if session.user %}
-                    <span class="username">{{ session.user }} ({{ session.role }})</span>
-                    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-                {% else %}
-                    <span class="username">Guest</span>
-                {% endif %}
+                <span class="username">{{ user }} ({{ session.role }})</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
             </div>
         </header>
 
         <!-- Sidebar -->
         <aside class="sidebar">
-            <!-- Search Section -->
-            <div class="sidebar-section search-section">
-                <div class="search-input-wrapper">
-                    <input 
-                        type="text" 
-                        id="location-search" 
-                        class="search-input" 
-                        placeholder="Search for a location..."
-                    >
-                    <span class="search-icon">&#128269;</span>
-                </div>
-                <button class="search-btn" id="search-location-btn">Search Location</button>
-            </div>
-
             <!-- Time Range Section -->
             <div class="sidebar-section">
                 <h3 class="section-title">Time Range</h3>

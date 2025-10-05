@@ -1,9 +1,16 @@
+// static/js/map.js
+// Fixed version with working sidebar search
+
 let map;
 let drawnLayers;
 let selectedPoints = [];
 let heatLayer = null;
 let activeLayers = {};
 let currentDate = null;
+let searchMarker = null;
+
+// Global geocoder (if Leaflet Geocoder loaded)
+let globalGeocoder = null;
 
 const GIBS_CONFIG = {
     baseUrl: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/',
@@ -75,7 +82,11 @@ function initMap() {
 
         heatLayer = L.layerGroup();
 
-        if (typeof L.Control !== 'undefined' && L.Control.geocoder) {
+        // Initialize global geocoder if available
+        if (typeof L.Control !== 'undefined' && L.Control.Geocoder) {
+            globalGeocoder = L.Control.Geocoder.nominatim();
+
+            // Add geocoder control to map (right-side search)
             L.Control.geocoder({
                 defaultMarkGeocode: false,
                 placeholder: 'Search location...',
@@ -88,15 +99,20 @@ function initMap() {
                     .setLatLng(latlng)
                     .setContent(e.geocode.name)
                     .openOn(map);
+
+                // also set/replace sidebar search marker for visual consistency
+                placeSearchMarker(latlng, e.geocode.name);
             })
             .addTo(map);
+        } else {
+            console.warn('Leaflet Geocoder not found — sidebar search may not work properly.');
         }
 
         setupEventListeners();
         setDefaultDates();
 
         console.log('Map initialized with date:', currentDate);
-        
+
         hideLoadingScreen();
     } catch (error) {
         console.error('Error initializing map:', error);
@@ -199,10 +215,10 @@ function setupEventListeners() {
     setupLayerToggle('layer-ndvi', 'vegetation');
     setupLayerToggle('layer-heatmap', 'analysisHeat');
 
-    // Search functionality
+    // Sidebar search elements - FIXED VERSION
     const searchBtn = document.getElementById('search-location-btn');
     const searchInput = document.getElementById('location-search');
-    
+
     if (searchBtn && searchInput) {
         const performSearch = () => {
             const query = searchInput.value.trim();
@@ -210,40 +226,56 @@ function setupEventListeners() {
                 alert('Please enter a location to search');
                 return;
             }
-            
-            if (typeof L.Control !== 'undefined' && L.Control.Geocoder) {
-                const geocoder = L.Control.Geocoder.nominatim();
-                geocoder.geocode(query, (results) => {
-                    if (results && results.length > 0) {
-                        const result = results[0];
-                        const latlng = result.center;
-                        map.setView(latlng, 12);
-                        
-                        L.popup()
-                            .setLatLng(latlng)
-                            .setContent(`<b>${result.name}</b>`)
-                            .openOn(map);
-                    } else {
-                        alert('Location not found. Please try a different search term.');
-                    }
-                });
-            } else {
-                alert('Search functionality is not available. Please check if Leaflet Geocoder is loaded.');
+
+            // Check if Leaflet Geocoder is available
+            if (typeof L.Control === 'undefined' || !L.Control.Geocoder) {
+                alert('Search functionality is not available. Please ensure Leaflet Geocoder library is loaded.');
+                console.error('Leaflet Geocoder library not found');
+                return;
             }
+
+            // Use the geocoder
+            const geocoder = L.Control.Geocoder.nominatim();
+            
+            geocoder.geocode(query, (results) => {
+                if (results && results.length > 0) {
+                    const result = results[0];
+                    const latlng = result.center;
+                    
+                    // Pan map to location
+                    map.setView(latlng, 12);
+
+                    // Show popup
+                    L.popup()
+                        .setLatLng(latlng)
+                        .setContent(`<b>${result.name}</b>`)
+                        .openOn(map);
+
+                    // Place search marker
+                    placeSearchMarker(latlng, result.name);
+                    
+                    console.log('Location found:', result.name, latlng);
+                } else {
+                    alert('Location not found. Please try a different search term.');
+                    console.log('No results for query:', query);
+                }
+            });
         };
-        
+
         searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 performSearch();
             }
         });
+    } else {
+        console.warn('Search input/button not found in DOM.');
     }
 
     // Place structure functionality
     const placeBtn = document.getElementById('place-structure');
     const structureSelect = document.getElementById('structure-type');
-    
+
     if (placeBtn && structureSelect) {
         let placingMode = false;
         let clickHandler = null;
@@ -331,6 +363,14 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+function placeSearchMarker(latlng, name) {
+    if (searchMarker) {
+        map.removeLayer(searchMarker);
+    }
+    searchMarker = L.marker(latlng).addTo(map);
+    searchMarker.bindPopup(`<b>${name || 'Search result'}</b>`).openPopup();
 }
 
 function setupLayerToggle(checkboxId, layerKey) {
@@ -435,10 +475,10 @@ async function analyzePoints() {
 
         const startInput = document.getElementById('start-date');
         const endInput = document.getElementById('end-date');
-        
+
         let startDate = '';
         let endDate = '';
-        
+
         if (startInput && startInput.value) {
             startDate = startInput.value.replace(/-/g, '');
         }
@@ -496,7 +536,7 @@ function displayResults(results) {
     if (!container) return;
 
     container.innerHTML = '<h4 style="margin-bottom: 1rem; color: #2c3e50;">Analysis Results</h4>';
-    
+
     window.__analysisResults = results;
 
     results.forEach((result, idx) => {
@@ -514,16 +554,16 @@ function displayResults(results) {
 
         const point = selectedPoints[idx];
         const structureType = point ? point.type : 'Unknown';
-        
+
         const meanTemp = result.power_summary?.mean_temp;
         const meanPrecip = result.power_summary?.mean_precip;
-        
+
         const scoreColor = result.score >= 70 ? '#10b981' : result.score >= 50 ? '#f59e0b' : '#ef4444';
-        
+
         const div = document.createElement('div');
         div.className = 'rec';
         div.style.borderLeftColor = scoreColor;
-        
+
         div.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                 <b>${structureType.charAt(0).toUpperCase() + structureType.slice(1)} #${idx + 1}</b>
@@ -542,7 +582,7 @@ function displayResults(results) {
                 View Details
             </button>
         `;
-        
+
         container.appendChild(div);
     });
 }
@@ -559,7 +599,7 @@ function updateAnalysisHeatmap(results) {
 
     let minTemp = Infinity;
     let maxTemp = -Infinity;
-    
+
     validResults.forEach(r => {
         const temp = r.power_summary.mean_temp;
         minTemp = Math.min(minTemp, temp);
@@ -569,7 +609,7 @@ function updateAnalysisHeatmap(results) {
     validResults.forEach(r => {
         const temp = r.power_summary.mean_temp;
         const normalized = maxTemp > minTemp ? (temp - minTemp) / (maxTemp - minTemp) : 0.5;
-        
+
         let color;
         if (normalized < 0.25) {
             color = '#3b82f6';
@@ -623,7 +663,7 @@ window.showDetailedAnalysis = function(index) {
 
     const point = selectedPoints[index];
     const structureType = point ? point.type : 'Unknown';
-    
+
     const modal = document.getElementById('rec-modal');
     const body = document.getElementById('rec-body');
     if (!modal || !body) return;
@@ -634,9 +674,9 @@ window.showDetailedAnalysis = function(index) {
     const meanSolar = result.power_summary?.mean_solar;
     const meanWind = result.power_summary?.mean_wind;
     const nDays = result.power_summary?.n_days;
-    
+
     const scoreColor = result.score >= 70 ? '#10b981' : result.score >= 50 ? '#f59e0b' : '#ef4444';
-    
+
     let recommendation = '';
     if (result.score >= 70) {
         recommendation = 'Excellent location for infrastructure. High suitability based on climate and accessibility factors.';
@@ -650,7 +690,7 @@ window.showDetailedAnalysis = function(index) {
         <h3 style="color: #2c3e50; margin-bottom: 1.5rem;">
             ${structureType.charAt(0).toUpperCase() + structureType.slice(1)} Analysis
         </h3>
-        
+
         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600;">Suitability Score</span>
@@ -659,9 +699,9 @@ window.showDetailedAnalysis = function(index) {
         </div>
 
         <p><b>Location:</b> ${result.lat.toFixed(6)}, ${result.lon.toFixed(6)}</p>
-        
+
         <hr>
-        
+
         <h4 style="color: #2c3e50; margin: 1rem 0 0.5rem 0;">Climate Data (NASA POWER)</h4>
         <p><b>Mean Temperature:</b> ${meanTemp !== undefined && meanTemp !== null ? meanTemp.toFixed(2) + '°C' : 'N/A'}</p>
         <p><b>Mean Precipitation:</b> ${meanPrecip !== undefined && meanPrecip !== null ? meanPrecip.toFixed(2) + 'mm/day' : 'N/A'}</p>
@@ -669,18 +709,18 @@ window.showDetailedAnalysis = function(index) {
         <p><b>Mean Solar Radiation:</b> ${meanSolar !== undefined && meanSolar !== null ? meanSolar.toFixed(1) + ' W/m²' : 'N/A'}</p>
         <p><b>Mean Wind Speed:</b> ${meanWind !== undefined && meanWind !== null ? meanWind.toFixed(1) + ' m/s' : 'N/A'}</p>
         <p><b>Data Points:</b> ${nDays || 'N/A'} days</p>
-        
+
         <hr>
-        
+
         <h4 style="color: #2c3e50; margin: 1rem 0 0.5rem 0;">Environmental Factors</h4>
         <p><b>NDVI (Vegetation):</b> ${result.ndvi?.toFixed(2) || 'N/A'}</p>
         <p><b>Population Density:</b> ~${result.population || 'N/A'} people/km²</p>
         <p><b>Distance to Roads:</b> ${result.road_km?.toFixed(2) || 'N/A'} km</p>
         <p><b>Distance to Water:</b> ${result.water_km?.toFixed(2) || 'N/A'} km</p>
         <p><b>Structure Type:</b> ${structureType}</p>
-        
+
         <hr>
-        
+
         <h4 style="color: #2c3e50; margin: 1rem 0 0.5rem 0;">Recommendation</h4>
         <p style="line-height: 1.6;">${recommendation}</p>
     `;
@@ -692,22 +732,22 @@ function setDefaultDates() {
     try {
         const startInput = document.getElementById('start-date');
         const endInput = document.getElementById('end-date');
-        
+
         if (startInput && endInput) {
             const today = new Date();
             const thirtyDaysAgo = new Date(today);
             thirtyDaysAgo.setDate(today.getDate() - 30);
-            
+
             const formatDate = (date) => {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             };
-            
+
             endInput.value = formatDate(today);
             startInput.value = formatDate(thirtyDaysAgo);
-            
+
             updateGIBSLayersWithDate(formatDate(today));
         }
     } catch (error) {
@@ -718,16 +758,16 @@ function setDefaultDates() {
 function clearAllMarkers() {
     drawnLayers.clearLayers();
     selectedPoints = [];
-    
+
     const recContainer = document.getElementById('recommendations');
     if (recContainer) {
         recContainer.innerHTML = '';
     }
-    
+
     if (heatLayer) {
         heatLayer.clearLayers();
     }
-    
+
     console.log('All markers cleared');
 }
 
