@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title or "Urban Climate Planner" }}</title>
+    <title>{{ title or "MR NASA MAP" }}</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -12,7 +12,7 @@
     <style>
         /* Additional styles for base template */
         .topbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dcdde10c 0%, #242225 100%);
             color: white;
             padding: 1rem 2rem;
             display: flex;
@@ -65,7 +65,7 @@
         }
         
         footer {
-            background: #2d3e50;
+            background: #71767b;
             color: rgba(255,255,255,0.8);
             text-align: center;
             padding: 1.5rem;
@@ -82,7 +82,7 @@
     <header class="topbar">
         <div class="brand">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" height="32" onerror="this.style.display='none'">
-            Urban Climate Planner
+            MR NASA MAP
         </div>
         <div class="nav">
             {% if session.user %}

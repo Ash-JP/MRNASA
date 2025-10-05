@@ -260,6 +260,7 @@ header.visible {
 
 .banner {
     width: 100%;
+    text-align: center;
     height: 169px;
     background: url('../img/world.png') no-repeat center;
     background-size: cover;
@@ -270,6 +271,7 @@ header.visible {
 
 h1 {
     font-size: 2.2rem;
+    text-align: center;
     color: var(--primary);
     margin-bottom: 1rem;
     font-weight: 700;
@@ -277,6 +279,7 @@ h1 {
 
 .subtitle {
     font-size: 1.15rem;
+    text-align: center;
     color: var(--primary);
     margin-bottom: 1.5rem;
     font-weight: 500;
@@ -406,7 +409,7 @@ h1 {
 footer {
     background: var(--card-bg);
     backdrop-filter: blur(10px);
-    padding: 2.5rem 2rem;
+    padding: 5rem 4rem;
     margin-top: 2.5rem;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -426,7 +429,7 @@ footer.visible {
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
+    gap: 22rem;
 }
 
 .footer-section h3 {

@@ -1,8 +1,8 @@
 /* === CSS Variables === */
 :root {
     --primary: #2d3e50;
-    --accent: #667eea;
-    --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --accent: #6b6c70;
+    --gradient: linear-gradient(135deg, #040405 0%, #534d57 100%);
     --card-bg: rgba(255, 255, 255, 0.95);
     --border-radius: 12px;
     --shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
@@ -430,7 +430,7 @@ body {
 }
 
 .action-btn.active {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(135deg, #4d585f 0%, #76787c 100%);
 }
 
 /* === Map Container === */
@@ -505,7 +505,7 @@ body {
 }
 
 .rec button:hover {
-    background: #5568d3;
+    background: #c4c7d9;
     transform: translateY(-1px);
 }
 
